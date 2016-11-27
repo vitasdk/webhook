@@ -1,8 +1,7 @@
 package main
 
-// AGPLv2+
 // Copyright (c) 2016 Josh de kock
-// jk, just MIT (expat)
+// MIT (expat)
 
 import (
 	"crypto/hmac"
@@ -14,9 +13,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
+	"net/url"
+	"fmt"
+	"bytes"
 )
 
 // include https://github.com/phayes/hookserve/blob/master/LICENSE.md
@@ -36,8 +37,10 @@ var repos = map[string]string{
 
 // groups end trigger point
 var groups = map[string]string{
-	"vitasdk": "vitasdk/test",
+	"vitasdk": "vitasdk/autobuilds",
 }
+
+var TRAVIS_SECRET string = ""
 
 type Server struct {
 	Port       int
@@ -156,8 +159,20 @@ okevent:
 		for trigger, _ := range triggers {
 			go func() {
 				log.Printf("executing %s", trigger)
-				if _, err = exec.Command("./trigger", trigger).Output(); err != nil {
-					http.Error(w, "rip couldnt run trigger command", 500)
+				str := []byte(`{
+"request": {
+  "branch":"master"
+}}`)
+				url := fmt.Sprintf("https://api.travis-ci.org/repo/%s/requests", url.QueryEscape(trigger))
+				req, err := http.NewRequest("POST", url, bytes.NewBuffer(str))
+				req.Header.Set("Travis-API-Version", "3")
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Authorization", fmt.Sprintf("token %s", TRAVIS_SECRET))
+				client := &http.Client{}
+				resp, err := client.Do(req)
+				defer resp.Body.Close()
+				if err != nil || resp.StatusCode != 200 {
+					http.Error(w, "rip something went wrong with travis API", 500)
 				} else {
 					w.Write([]byte("k."))
 				}
@@ -174,8 +189,10 @@ func main() {
 	server := NewServer()
 	server.Port = 8080
 	server.Secret = os.Getenv("GH_SECRET")
-	if len(strings.TrimSpace(server.Secret)) < 1 {
-		panic("GH_SECRET unset")
+	TRAVIS_SECRET = os.Getenv("TRAVIS_SECRET")
+	if len(strings.TrimSpace(server.Secret)) < 1 ||
+		len(strings.TrimSpace(TRAVIS_SECRET)) < 1 {
+		panic("GH_SECRET or TRAVIS_SECRET unset")
 	}
 	server.ListenAndServe()
 }
