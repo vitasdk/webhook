@@ -172,7 +172,7 @@ okevent:
 
 func main() {
 	server := NewServer()
-	server.Port = 8080
+	server.Port = 5019
 	server.Secret = os.Getenv("GH_SECRET")
 	if len(strings.TrimSpace(server.Secret)) < 1 {
 		panic("GH_SECRET unset")
