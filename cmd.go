@@ -32,11 +32,12 @@ var repos = map[string]string{
 	"vitasdk/vita-toolchain":   "vitasdk",
 	"vitasdk/vita-samples":     "vitasdk",
 	"vitasdk/pthread-embedded": "vitasdk",
+	"vitasdk/test":             "vitasdk",
 }
 
 // groups end trigger point
 var groups = map[string]string{
-	"vitasdk": "vitasdk/test",
+	"vitasdk": "vitasdk/autobuilds",
 }
 
 type Server struct {
