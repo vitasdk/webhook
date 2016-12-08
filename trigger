@@ -11,6 +11,10 @@ else
 fi
 
 cd "$1"
+
+git config user.email "vitasdk@henkaku.xyz"
+git config user.name "Auto Builder"
+
 echo "commiting"
 git commit --allow-empty -m "Build on $(date)"
 echo "push"
