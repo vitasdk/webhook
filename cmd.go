@@ -72,7 +72,7 @@ func (s *Server) ignoreRef(rawRef string) bool {
 	if rawRef[:10] == "refs/tags/" && !s.IgnoreTags {
 		return false
 	}
-	return rawRef[:11] != "refs/heads/"
+	return rawRef[:17] != "refs/heads/master"
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
